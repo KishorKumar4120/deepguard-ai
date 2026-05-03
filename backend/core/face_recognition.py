@@ -66,13 +66,12 @@ class FaceRecognitionEngine:
             resized = cv2.resize(gray, (100, 100))
             
             # Use HOG (Histogram of Oriented Gradients) features
-            # Calculate histogram of gradients as simple features
             gx = cv2.Sobel(resized, cv2.CV_32F, 1, 0, ksize=3)
             gy = cv2.Sobel(resized, cv2.CV_32F, 0, 1, ksize=3)
             mag, ang = cv2.cartToPolar(gx, gy)
             
             # Create histogram of angles
-            bin_n = 16  # Number of bins
+            bin_n = 16
             bins = np.int32(bin_n * ang / (2 * np.pi))
             hist = np.zeros((bin_n,))
             for i in range(bin_n):
@@ -102,7 +101,6 @@ class FaceRecognitionEngine:
     async def register_face(self, name: str, face_img):
         """Register a new face"""
         try:
-            # Get face encoding
             encoding = self.get_face_encoding(face_img)
             
             if encoding is None:
@@ -138,7 +136,6 @@ class FaceRecognitionEngine:
         if encoding1 is None or encoding2 is None:
             return False, 1.0
         
-        # Ensure same length
         min_len = min(len(encoding1), len(encoding2))
         if min_len == 0:
             return False, 1.0
@@ -146,19 +143,34 @@ class FaceRecognitionEngine:
         enc1 = encoding1[:min_len]
         enc2 = encoding2[:min_len]
         
-        # Calculate Euclidean distance
         distance = np.linalg.norm(enc1 - enc2)
-        
-        # Normalize distance (0 to 1)
-        max_distance = np.sqrt(min_len)  # Maximum possible distance
+        max_distance = np.sqrt(min_len)
         normalized_distance = distance / max_distance
         
         return normalized_distance < tolerance, normalized_distance
     
-    async def recognize_face(self, face_img):
+    def send_email_alert(self, face_img, camera_name="Unknown Camera"):
+        """Send email alert for unknown person"""
+        try:
+            from backend.alerts.email_alert import EmailAlert
+            email_alert = EmailAlert()
+            
+            # Check if email is configured
+            if email_alert.sender_email and email_alert.receiver_email:
+                email_alert.send_alert(
+                    frame=face_img,
+                    person_name="Unknown Person",
+                    camera_name=camera_name
+                )
+                logger.info(f"📧 Email alert sent for unknown person at {camera_name}")
+            else:
+                logger.warning("Email not configured - alerts will only be logged")
+        except Exception as e:
+            logger.error(f"Failed to send email alert: {e}")
+    
+    async def recognize_face(self, face_img, camera_name="Unknown Camera"):
         """Recognize a face by comparing with known faces"""
         try:
-            # Get encoding of the face
             encoding = self.get_face_encoding(face_img)
             
             if encoding is None:
@@ -179,8 +191,6 @@ class FaceRecognitionEngine:
                 if best_match is not None:
                     confidence = 1 - best_distance
                     name = self.known_face_names[best_match]
-                    
-                    # Get simple face attributes
                     attributes = self.get_simple_attributes(face_img)
                     
                     return {
@@ -190,8 +200,12 @@ class FaceRecognitionEngine:
                         'attributes': attributes
                     }
             
-            # Unknown face
+            # UNKNOWN FACE DETECTED - Send email alert!
             attributes = self.get_simple_attributes(face_img)
+            
+            # Send email alert for unknown person
+            self.send_email_alert(face_img, camera_name)
+            
             return {
                 'name': 'UNKNOWN',
                 'confidence': 0.0,
@@ -209,31 +223,24 @@ class FaceRecognitionEngine:
             gray = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
             h, w = face_img.shape[:2]
             
-            # Simple attribute estimation
-            # Calculate face symmetry (left-right)
             left_half = gray[:, :w//2]
             right_half = cv2.flip(gray[:, w//2:], 1)
             
-            # Ensure same size
             min_width = min(left_half.shape[1], right_half.shape[1])
             left_half = left_half[:, :min_width]
             right_half = right_half[:, :min_width]
             
             symmetry = 1 - np.mean(np.abs(left_half - right_half)) / 255.0
-            
-            # Estimate brightness and contrast
             brightness = np.mean(gray) / 255.0
             
             attributes = {
-                'age': 30,  # Default
+                'age': 30,
                 'gender': 'Unknown',
                 'emotion': 'Neutral',
                 'symmetry': round(symmetry, 2),
                 'brightness': round(brightness, 2)
             }
             
-            # Rough age estimation based on face proportions
-            # (Very crude, but works for demo)
             aspect_ratio = w / h
             if aspect_ratio > 0.8:
                 attributes['age'] = 25
@@ -252,7 +259,6 @@ class FaceRecognitionEngine:
         """Detect faces in frame using OpenCV cascade"""
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Detect faces
         faces = self.face_cascade.detectMultiScale(
             gray,
             scaleFactor=1.1,
@@ -262,7 +268,6 @@ class FaceRecognitionEngine:
         
         face_locations = []
         for (x, y, w, h) in faces:
-            # Convert to (top, right, bottom, left) format
             top = y
             right = x + w
             bottom = y + h
