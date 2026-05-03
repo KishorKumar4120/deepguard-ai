@@ -1,0 +1,46 @@
+cd C:\Users\KishorKumar\deepguard_ai
+
+# Create a STRICT .gitignore
+(
+echo # Virtual Environment
+echo deepguard_env/
+echo venv/
+echo env/
+echo 
+echo # Python cache
+echo __pycache__/
+echo *.pyc
+echo *.pyo
+echo *.pyd
+echo 
+echo # Binary files
+echo *.pkl
+echo *.jpg
+echo *.jpeg
+echo *.png
+echo *.db
+echo *.duckdb
+echo 
+echo # IDE and config
+echo .vscode/
+echo .idea/
+echo .cursor/
+echo .jetro/
+echo .github/
+echo .agents/
+echo 
+echo # Frontend
+echo frontend-web/node_modules/
+echo frontend-web/build/
+echo frontend-web/.git/
+echo 
+echo # Temporary
+echo temp_face.jpg
+echo victory_report.json
+echo test_report_*.json
+echo 
+echo # OS
+echo .DS_Store
+echo Thumbs.db
+echo desktop.ini
+) > .gitignore
