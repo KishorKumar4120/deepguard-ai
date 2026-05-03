@@ -7,7 +7,7 @@ function App() {
 
     useEffect(() => {
         // Check backend health
-        axios.get('http://127.0.0.1:8000/health')
+        axios.get('https://KishorKumar4120-deepguard-ai.hf.space/health')
             .then(response => {
                 setStatus('✅ Connected to DeepGuard AI Backend');
                 setFaces(response.data.face_engine?.known_faces || []);
