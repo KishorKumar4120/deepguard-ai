@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function App() {
@@ -70,8 +70,8 @@ function App() {
 
                 <div style={{ marginTop: '40px', padding: '20px', background: '#f3f4f6', borderRadius: '10px' }}>
                     <h3>Quick Links:</h3>
-                    <p><a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">📚 API Documentation</a></p>
-                    <p><a href="http://127.0.0.1:8000/health" target="_blank" rel="noopener noreferrer">💚 Health Check</a></p>
+                    <p><a href="https://KishorKumar4120-deepguard-ai.hf.space/docs" target="_blank" rel="noopener noreferrer">📚 API Documentation</a></p>
+                    <p><a href="https://KishorKumar4120-deepguard-ai.hf.space/health" target="_blank" rel="noopener noreferrer">💚 Health Check</a></p>
                 </div>
             </div>
         </div>
