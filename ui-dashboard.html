@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard AI - Security Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-offline {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-unit {
+            font-size: 14px;
+            color: #999;
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* Alert Items */
+        .alert-item {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .alert-item:hover {
+            transform: translateX(5px);
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #dc2626;
+            margin-bottom: 5px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .camera-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .camera-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .camera-location {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+        .toast-info { background: #3b82f6; }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .face-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #e0e7ff;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 12px;
+            color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                🛡️ DeepGuard AI Security Suite
+            </h1>
+            <div id="statusBadge" class="status-badge status-offline">
+                ⚪ Checking...
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card" onclick="showAlerts()">
+                <h3>Total Alerts</h3>
+                <div class="stat-value" id="totalAlerts">0</div>
+                <div class="stat-unit">Security events</div>
+            </div>
+            <div class="stat-card" onclick="showCameras()">
+                <h3>Active Cameras</h3>
+                <div class="stat-value" id="activeCameras">0</div>
+                <div class="stat-unit">Cameras online</div>
+            </div>
+            <div class="stat-card" onclick="showFaces()">
+                <h3>Registered Faces</h3>
+                <div class="stat-value" id="registeredFaces">0</div>
+                <div class="stat-unit">Known persons</div>
+            </div>
+            <div class="stat-card">
+                <h3>System Uptime</h3>
+                <div class="stat-value" id="uptime">100%</div>
+                <div class="stat-unit">Operational</div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="main-grid">
+            <!-- Add Camera Section -->
+            <div class="card">
+                <h2>➕ Add New Camera</h2>
+                <div class="form-group">
+                    <label>Camera Name</label>
+                    <input type="text" id="camName" placeholder="e.g., Front Door">
+                </div>
+                <div class="form-group">
+                    <label>Camera Source</label>
+                    <input type="text" id="camSource" placeholder="0 for webcam, or RTSP URL">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="camLocation" placeholder="e.g., Main Entrance">
+                </div>
+                <button class="btn btn-primary" onclick="addCamera()">➕ Add Camera</button>
+            </div>
+
+            <!-- Register Face Section -->
+            <div class="card">
+                <h2>👤 Register New Face</h2>
+                <div class="form-group">
+                    <label>Person's Name</label>
+                    <input type="text" id="personName" placeholder="e.g., John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Face Image</label>
+                    <input type="file" id="faceImage" accept="image/*">
+                </div>
+                <div id="imagePreview" style="margin: 10px 0; text-align: center;"></div>
+                <button class="btn btn-primary" onclick="registerFace()">📸 Register Face</button>
+            </div>
+        </div>
+
+        <!-- Cameras List -->
+        <div class="card" style="margin-bottom: 25px;">
+            <h2>📹 Active Cameras</h2>
+            <div id="camerasList">
+                <p style="color: #999; text-align: center; padding: 20px;">No cameras added yet</p>
+            </div>
+        </div>
+
+        <!-- Registered Faces -->
+        <div class="card" style="margin-bottom: 25px;">
+            <h2>👥 Registered Faces</h2>
+            <div id="facesList">
+                <p style="color: #999; text-align: center; padding: 20px;">No faces registered yet</p>
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div class="card">
+            <h2>🚨 Recent Security Alerts</h2>
+            <div id="alertsList">
+                <p style="color: #999; text-align: center; padding: 20px;">No alerts yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Image Preview</h2>
+                <button class="close-btn" onclick="closeModal('imageModal')">&times;</button>
+            </div>
+            <img id="previewImage" src="" style="width: 100%; border-radius: 10px;">
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://KishorKumar4120-deepguard-ai.hf.space';
+        
+        // Show toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Fetch data from API
+        async function fetchAPI(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`API Error: ${endpoint}`, error);
+                return null;
+            }
+        }
+
+        // Load all dashboard data
+        async function loadDashboard() {
+            try {
+                // Check health
+                const health = await fetchAPI('/health');
+                if (health) {
+                    document.getElementById('statusBadge').className = 'status-badge status-online';
+                    document.getElementById('statusBadge').innerHTML = '🟢 SYSTEM ONLINE';
+                    document.getElementById('registeredFaces').innerText = health.face_engine?.known_faces_count || 0;
+                } else {
+                    document.getElementById('statusBadge').className = 'status-badge status-offline';
+                    document.getElementById('statusBadge').innerHTML = '🔴 OFFLINE';
+                }
+
+                // Load cameras
+                const cameras = await fetchAPI('/api/cameras/list');
+                if (cameras && cameras.cameras) {
+                    document.getElementById('activeCameras').innerText = cameras.total || 0;
+                    displayCameras(cameras.cameras);
+                }
+
+                // Load alerts
+                const alerts = await fetchAPI('/api/alerts/statistics');
+                if (alerts) {
+                    document.getElementById('totalAlerts').innerText = alerts.total_alerts || 0;
+                }
+
+                // Load alert history
+                const alertHistory = await fetchAPI('/api/alerts/history?limit=10');
+                if (alertHistory && alertHistory.alerts) {
+                    displayAlerts(alertHistory.alerts);
+                }
+
+                // Load registered faces
+                const faces = await fetchAPI('/api/faces/list');
+                if (faces && faces.faces) {
+                    displayFaces(faces.faces);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Display cameras
+        function displayCameras(cameras) {
+            const container = document.getElementById('camerasList');
+            if (!cameras || cameras.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No cameras added yet</p>';
+                return;
+            }
+
+            container.innerHTML = cameras.map(cam => `
+                <div class="camera-item">
+                    <div>
+                        <div class="camera-name">📹 ${cam.name}</div>
+                        <div class="camera-location">📍 ${cam.location || 'No location'} | Source: ${cam.source}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteCamera('${cam.id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        // Display faces
+        function displayFaces(faces) {
+            const container = document.getElementById('facesList');
+            if (!faces || faces.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No faces registered yet</p>';
+                return;
+            }
+
+            container.innerHTML = faces.map(face => `
+                <span class="face-badge">✅ ${face}</span>
+            `).join('');
+        }
+
+        // Display alerts
+        function displayAlerts(alerts) {
+            const container = document.getElementById('alertsList');
+            if (!alerts || alerts.length === 0) {
+                container.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">No security alerts yet. System is secure!</p>';
+                return;
+            }
+
+            container.innerHTML = alerts.slice(0, 5).map(alert => `
+                <div class="alert-item">
+                    <div class="alert-title">🚨 ${alert.type?.replace('_', ' ') || 'Security Alert'}</div>
+                    <div style="font-size: 12px; color: #666; margin: 5px 0;">
+                        Camera: ${alert.camera_name || 'Unknown'} | Severity: ${alert.severity || 'HIGH'}
+                    </div>
+                    <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Add camera
+        async function addCamera() {
+            const name = document.getElementById('camName').value;
+            const source = document.getElementById('camSource').value;
+            const location = document.getElementById('camLocation').value;
+
+            if (!name || !source) {
+                showToast('Please fill camera name and source', 'error');
+                return;
+            }
+
+            const cameraData = {
+                id: `cam_${Date.now()}`,
+                name: name,
+                source: source,
+                location: location || 'Not specified'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/cameras/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cameraData)
+                });
+
+                if (response.ok) {
+                    showToast(`✅ Camera "${name}" added successfully!`);
+                    document.getElementById('camName').value = '';
+                    document.getElementById('camSource').value = '';
+                    document.getElementById('camLocation').value = '';
+                    loadDashboard();
+                } else {
+                    showToast('❌ Failed to add camera', 'error');
+                }
+            } catch (error) {
+                showToast('❌ Error adding camera', 'error');
+            }
+        }
+
+        // Delete camera
+        async function deleteCamera(cameraId) {
+            if (confirm('Are you sure you want to delete this camera?')) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/cameras/${cameraId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        showToast('✅ Camera deleted successfully');
+                        loadDashboard();
+                    } else {
+                        showToast('❌ Failed to delete camera', 'error');
+                    }
+                } catch (error) {
+                    showToast('❌ Error deleting camera', 'error');
+                }
+            }
+        }
+
+        // Register face
+        async function registerFace() {
+            const name = document.getElementById('personName').value;
+            const file = document.getElementById('faceImage').files[0];
+
+            if (!name || !file) {
+                showToast('Please enter name and select an image', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/faces/register`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showToast(`✅ Face registered for "${name}"!`);
+                    document.getElementById('personName').value = '';
+                    document.getElementById('faceImage').value = '';
+                    document.getElementById('imagePreview').innerHTML = '';
+                    loadDashboard();
+                } else {
+                    showToast('❌ Failed to register face. Make sure a clear face is visible.', 'error');
+                }
+            } catch (error) {
+                showToast('❌ Error registering face', 'error');
+            }
+        }
+
+        // Image preview
+        document.getElementById('faceImage').addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    preview.innerHTML = `<img src="${ev.target.result}" style="max-width: 100%; max-height: 150px; border-radius: 10px; cursor: pointer;" onclick="showImagePreview('${ev.target.result}')">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        // Show image preview modal
+        function showImagePreview(src) {
+            document.getElementById('previewImage').src = src;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Show alerts
+        function showAlerts() {
+            document.getElementById('alertsList').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show cameras
+        function showCameras() {
+            document.getElementById('camerasList').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show faces
+        function showFaces() {
+            document.getElementById('facesList').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Load dashboard every 10 seconds
+        loadDashboard();
+        setInterval(loadDashboard, 10000);
+    </script>
+</body>
+</html>
